@@ -3,14 +3,12 @@
     "short_name": "PWA",
     "start_url": "/index.html",
     "display": "standalone",
-    "background_color": "#ffffff",
     "theme_color": "#0078d7",
     "icons": [
         {
-            "src":"assets/gato-negro.png",
-            "sizes":"192x192",
-            "type":"image/png"
+            "src": "assets/gato-negro.png",
+            "sizes": "192x192",
+            "type": "image/png"
         }
     ]
-
 }
