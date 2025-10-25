@@ -4,35 +4,41 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/service-worker.js");
 }
 
-// Función para cargar los datos desde data.json
-async function loadUsers() {
-  try {
-    const response = await fetch("/data.json");
-    const data = await response.json();
+const container = document.getElementById("pokemons-container");
 
-    const userListElement = document.getElementById("user-list");
+// Mostrar mensaje de carga mientras se obtienen los datos
+container.innerHTML = `<p class="loading">Cargando...</p>`;
 
-    // Limpia el contenedor
-    userListElement.innerHTML = "";
+fetch("https://pokeapi.co/api/v2/pokemon?limit=12")
+  .then((res) => res.json())
+  .then(async (data) => {
+    container.innerHTML = ""; // limpiar antes de renderizar
+    // Obtener datos detallados (sprites) de cada pokemon
+    const details = await Promise.all(
+      data.results.map((p) => fetch(p.url).then((r) => r.json()))
+    );
 
-    // Agrega cada usuario a la lista
-    data.users.forEach((user) => {
-      const userDiv = document.createElement("div");
-      userDiv.classList.add("user-card");
-      userDiv.innerHTML = `
-        <h3>${user.nombre}</h3>
-        <p>ID: ${user.id}</p>
-        <p>Edad: ${user.edad}</p>
-      `;
-      userListElement.appendChild(userDiv);
+    details.forEach((p) => {
+      const card = document.createElement("div");
+      card.className = "pokemon-card";
+
+      const img = document.createElement("img");
+      const art =
+        p.sprites?.other?.["official-artwork"]?.front_default ||
+        p.sprites?.front_default ||
+        "assets/image.png";
+      img.src = art;
+      img.alt = p.name;
+
+      const title = document.createElement("h3");
+      title.textContent = p.name.charAt(0).toUpperCase() + p.name.slice(1);
+
+      card.appendChild(img);
+      card.appendChild(title);
+      container.appendChild(card);
     });
-  } catch (error) {
-    console.error("Error al cargar los datos:", error);
-    const userListElement = document.getElementById("user-list");
-    userListElement.innerHTML =
-      '<div class="error">Error al cargar los datos. Intente más tarde.</div>';
-  }
-}
-
-// Cargar datos cuando la página esté lista
-document.addEventListener("DOMContentLoaded", loadUsers);
+  })
+  .catch((err) => {
+    console.error("Error cargando pokemons:", err);
+    container.innerHTML = `<p class="error">No se pudo cargar la información.</p>`;
+  });
